@@ -115,31 +115,31 @@ function openModal() {
     gallery.removeChild(gallery.firstChild);
   }
 
-// Ajoute les images à la galerie
-allWorks.forEach((work, index) => {
-  const container = document.createElement('div');
-  container.style.position = 'relative'; // Ajouter le positionnement relatif au conteneur
+  // Ajoute les images à la galerie
+  allWorks.forEach((work, index) => {
+    const container = document.createElement('div');
+    container.classList.add('gallery-item');
 
-  const img = document.createElement('img');
-  img.src = work.imageUrl;
-  img.alt = work.title;
-  container.appendChild(img);
+    const img = document.createElement('img');
+    img.src = work.imageUrl;
+    img.alt = work.title;
+    container.appendChild(img);
 
-  const editText = document.createElement('p');
-  editText.textContent = 'éditer';
-  container.appendChild(editText);
+    const editText = document.createElement('p');
+    editText.textContent = 'éditer';
+    container.appendChild(editText);
 
-  const deleteButton = document.createElement('button');
-  deleteButton.classList.add('delete-button'); // Ajoutez la classe delete-button
-  deleteButton.dataset.workIndex = index; // Ajouter l'attribut data-work-index au bouton de suppression
+    const deleteButton = document.createElement('button');
+    deleteButton.classList.add('delete-button'); // Ajoutez la classe delete-button
+    deleteButton.dataset.workIndex = index; // Ajouter l'attribut data-work-index au bouton de suppression
 
-  const deleteIcon = document.createElement('i');
-  deleteIcon.classList.add('fas', 'fa-trash-can');
-  deleteButton.appendChild(deleteIcon);
+    const deleteIcon = document.createElement('i');
+    deleteIcon.classList.add('fas', 'fa-trash-can');
+    deleteButton.appendChild(deleteIcon);
 
-  container.appendChild(deleteButton);
+    container.appendChild(deleteButton);
 
-  gallery.appendChild(container);
+    gallery.appendChild(container);
 });
 
   // Affiche la modale  
@@ -197,4 +197,47 @@ async function deleteWork(workIndex) {
   } catch (error) {
     console.error('Erreur lors de la suppression du travail', error);
   }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Bouton d'ouverture du formulaire
+  const addPhotoButton = document.querySelector('#add-photo-button');
+  addPhotoButton.addEventListener('click', openModalForm);
+
+  // Bouton de fermeture du formulaire
+  const closeFormButton = document.querySelector('#close-form-button');
+  closeFormButton.addEventListener('click', closeModalForm);
+
+  //Bouton de retour vers la modale
+  const backToModalButton = document.querySelector('#back-button');
+  backToModalButton.addEventListener('click', returnToModal);
+
+  // Cliquez en dehors de la modale pour la fermer
+  window.onclick = (event) => {
+    const modalForm = document.querySelector('#modal-form');
+    if (event.target === modalForm) {
+      closeModalForm();
+    }
+  }
+});
+
+// Fonction pour ouvrir le formulaire
+function openModalForm() {
+  const modalForm = document.querySelector('#modal-form');
+
+  // Affiche le formulaire
+  modalForm.classList.remove('hidden');
+  // Ferme la modale
+  closeModal();
+}
+
+// Fonction pour fermer le formulaire
+function closeModalForm() {
+  const modalForm = document.querySelector('#modal-form');
+  modalForm.classList.add('hidden');
+}
+
+function returnToModal() {
+  closeModalForm();
+  openModal();
 }
