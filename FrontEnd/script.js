@@ -47,7 +47,11 @@ function displayWorks(works) {
 async function fetchCategories() {
   const response = await fetch('http://localhost:5678/api/categories');
   const categories = await response.json();
-  displayCategories(categories);
+  const token = localStorage.getItem('token');
+  if (!token) {
+    // Si l'utilisateur n'est pas connecté, affiche les catégories
+    displayCategories(categories);
+  }
 }
 
 // Affiche les boutons de catégorie et ajoute un gestionnaire d'événements pour le filtrage
@@ -88,9 +92,34 @@ function filterWorks(categoryId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Bouton d'ouverture de la modale
+  const editButton = document.getElementById('edit-button');
+  const editButtonImage = document.getElementById('edit-button-image');
+  const editButtonTitle = document.getElementById('edit-button-title');
+
+  // Vérifie si l'utilisateur est connecté 
+  const token = localStorage.getItem('token');
+  if (token) {
+    // Si l'utilisateur est connecté, affiche le bouton "modifier"
+    editButton.style.display = 'block';
+    editButtonImage.style.display = 'block';
+    editButtonTitle.style.display = 'block';
+  } else {
+    // Sinon, masque le bouton "modifier"
+    editButton.style.display = 'none';
+    editButtonImage.style.display = 'none';
+    editButtonTitle.style.display = 'none';
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
   const editButton = document.querySelector('#edit-button');
   editButton.addEventListener('click', openModal);
+
+  // Gestionnaire d'événements pour les boutons "modifier" au-dessus de l'image et du titre
+  const editButtonImage = document.querySelector('#edit-button-image');
+  const editButtonTitle = document.querySelector('#edit-button-title');
+  editButtonImage.addEventListener('click', preventModalOpen);
+  editButtonTitle.addEventListener('click', preventModalOpen);
 
   // Bouton de fermeture de la modale
   const closeButton = document.querySelector('#close-button');
@@ -104,6 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+// Fonction pour empêcher l'ouverture de la modale
+function preventModalOpen(event) {
+  event.stopPropagation();
+}
 
 // Fonction pour ouvrir la modale et afficher les images de la galerie
 function openModal() {
@@ -130,8 +164,8 @@ function openModal() {
     container.appendChild(editText);
 
     const deleteButton = document.createElement('button');
-    deleteButton.classList.add('delete-button'); // Ajoutez la classe delete-button
-    deleteButton.dataset.workIndex = index; // Ajouter l'attribut data-work-index au bouton de suppression
+    deleteButton.classList.add('delete-button');
+    deleteButton.dataset.workIndex = index;
 
     const deleteIcon = document.createElement('i');
     deleteIcon.classList.add('fas', 'fa-trash-can');
@@ -140,7 +174,7 @@ function openModal() {
     container.appendChild(deleteButton);
 
     gallery.appendChild(container);
-});
+  });
 
   // Affiche la modale  
   modal.classList.remove('hidden');
@@ -155,7 +189,7 @@ function closeModal() {
 // Gestionnaire d'événements pour le bouton de suppression
 document.addEventListener('click', async (event) => {
   // Vérifie si le bouton cliqué ou son parent est un bouton de suppression
-  if ((event.target.tagName === 'BUTTON' && event.target.classList.contains('delete-button')) 
+  if ((event.target.tagName === 'BUTTON' && event.target.classList.contains('delete-button'))
     || (event.target.parentNode.tagName === 'BUTTON' && event.target.parentNode.classList.contains('delete-button'))) {
     let workIndex = event.target.dataset.workIndex;
     if (!workIndex && event.target.parentNode.tagName === 'BUTTON') {
@@ -163,7 +197,6 @@ document.addEventListener('click', async (event) => {
     }
     if (workIndex !== undefined) {
       await deleteWork(parseInt(workIndex));
-      // Refresh the works
       removeExistingWorks();
       const works = await fetchWorks();
       displayWorks(works);
@@ -240,7 +273,7 @@ async function openModalForm() {
   emptyOption.textContent = "";
   workCategorySelect.appendChild(emptyOption);
 
-  if(categories && Array.isArray(categories)) {
+  if (categories && Array.isArray(categories)) {
     categories.forEach(category => {
       const option = document.createElement('option');
       option.value = category.id;
@@ -248,9 +281,7 @@ async function openModalForm() {
       workCategorySelect.appendChild(option);
     });
   }
-  // Affiche le formulaire
   modalForm.classList.remove('hidden');
-  // Ferme la modale
   closeModal();
 }
 
@@ -280,41 +311,41 @@ function resetForm() {
   image.style.display = "none";
   Array.from(uploadContainer.children).forEach(child => {
     // Ne modifie pas l'affichage de l'input file et de l'image
-    if(child.id !== "displayImage" && child.id !== "imageUpload") {
+    if (child.id !== "displayImage" && child.id !== "imageUpload") {
       child.style.display = "block";
     }
   });
 }
 
-document.getElementById('uploadForm').addEventListener('submit', function(event) {
+document.getElementById('uploadForm').addEventListener('submit', function (event) {
   event.preventDefault(); // Empêche la soumission du formulaire
 });
 
-document.getElementById('uploadButton').addEventListener('click', function(event) {
-  event.preventDefault(); // Empêche le comportement par défaut
+document.getElementById('uploadButton').addEventListener('click', function (event) {
+  event.preventDefault();
   document.getElementById('imageUpload').click();
 });
 
-document.getElementById("imageUpload").addEventListener("change", function(event){
+document.getElementById("imageUpload").addEventListener("change", function (event) {
   let file = event.target.files[0];
   let imageUrl = URL.createObjectURL(file);
 
   let image = document.getElementById("displayImage");
   image.src = imageUrl;
-  image.style.display = "block"; // Rend l'image visible
+  image.style.display = "block";
 
   let uploadContainer = document.querySelector('.upload-container');
 
   Array.from(uploadContainer.children).forEach(child => {
-    if(child.id !== "displayImage") {
+    if (child.id !== "displayImage") {
       child.style.display = "none";
     }
   });
 });
 
 // Envoie le nouveau travail
-document.getElementById('uploadForm').addEventListener('submit', async function(event) {
-  event.preventDefault(); // Empêche la soumission du formulaire
+document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+  event.preventDefault();
 
   const titleInput = document.querySelector('#work-title');
   const categorySelect = document.querySelector('#work-category');
@@ -364,13 +395,35 @@ document.addEventListener('DOMContentLoaded', () => {
   imageInput.addEventListener('change', validateForm);
 
   function validateForm() {
-    // Vérifiez si tous les champs sont remplis
+    // Vérifie si tous les champs sont remplis
     if (titleInput.value && categoryInput.value && imageInput.files.length > 0) {
-      // Si oui, ajoutez la classe 'valid' au bouton de soumission
-      submitButton.classList.add('valid');
+      // Si oui, ajoute la classe 'logged' au bouton de soumission
+      submitButton.classList.add('logged');
     } else {
-      // Sinon, retirez la classe 'valid'
-      submitButton.classList.remove('valid');
+      // Sinon, retire la classe 'logged'
+      submitButton.classList.remove('logged');
     }
   }
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const loginLink = document.querySelector('nav li:nth-child(3) a');
+
+  const token = localStorage.getItem('token');
+  if (token) {
+    // Si un token est présent dans le localStorage, l'utilisateur est connecté
+    loginLink.textContent = 'logout';
+    loginLink.addEventListener('click', logout);
+  } else {
+    // Si aucun token n'est présent, l'utilisateur n'est pas connecté
+    loginLink.textContent = 'login';
+    loginLink.href = 'login.html'; // Redirige vers la page de connexion
+  }
+});
+
+// Fonction pour déconnecter l'utilisateur
+function logout() {
+  localStorage.removeItem('token');
+  window.location.href = 'login.html'; // Redirige vers la page de connexion
+}
