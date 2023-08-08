@@ -124,14 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Bouton de fermeture de la modale
   const closeButton = document.querySelector('#close-button');
   closeButton.addEventListener('click', closeModal);
-
-  // Cliquez en dehors de la modale pour la fermer
-  window.onclick = (event) => {
-    const modal = document.querySelector('#modal');
-    if (event.target === modal) {
-      closeModal();
-    }
-  }
 });
 
 // Fonction pour empêcher l'ouverture de la modale
@@ -199,6 +191,7 @@ document.addEventListener('click', async (event) => {
       await deleteWork(parseInt(workIndex));
       removeExistingWorks();
       const works = await fetchWorks();
+      openModal();
       displayWorks(works);
     } else {
       console.error('Impossible de trouver ou récupérer l\'ID du travail');
@@ -244,15 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
   //Bouton de retour vers la modale
   const backToModalButton = document.querySelector('#back-button');
   backToModalButton.addEventListener('click', returnToModal);
-
-  // Cliquez en dehors du formulaire pour la fermer
-  window.onclick = (event) => {
-    const modalForm = document.querySelector('#modal-form');
-    if (event.target === modalForm) {
-      closeModalForm();
-      resetForm();
-    }
-  }
 });
 
 // Fonction pour ouvrir le formulaire
@@ -378,6 +362,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function 
     closeModalForm();
     removeExistingWorks();
     const works = await fetchWorks();
+    openModal();
     displayWorks(works);
   } catch (error) {
     console.error('Erreur lors de la création du travail', error);
@@ -431,3 +416,18 @@ function logout() {
   localStorage.removeItem('token');
   window.location.href = 'login.html'; // Redirige vers la page de connexion
 }
+
+// Cliquer en dehors du formulaire ou de la modale les ferme
+window.addEventListener('click', (event) => {
+  const modal = document.querySelector('#modal');
+  const modalForm = document.querySelector('#modal-form');
+
+  if (event.target === modal) {
+    closeModal();
+  }
+
+  if (event.target === modalForm) {
+    closeModalForm();
+    resetForm();
+  }
+});
